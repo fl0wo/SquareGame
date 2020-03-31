@@ -86,12 +86,28 @@ public:
             letters.push_back(letter);
         }
 
+        for(pi cell : visibles){
+            int j = cell.first;
+            int i = cell.second;
+
+            if(!m.isWall(j,i)){
+
+                string x = ".";
+                Color c = Color::Red;
+                Text letter = create(S,i*S,j*S,c,x);
+
+                letters.push_back(letter);
+            }
+
+        }
 
         //Exception for the player
         letters.push_back(create(S,playerCol*S,playerRow*S,Color::Magenta,"@"));
         
         // what i just saw, now is explored.
         m.addExplored(visibles);
+
+        filter.clear();
 
         return letters;
     }
@@ -116,7 +132,7 @@ public:
             case JustVisited:
                 return 1.0F;
             default:
-                return 0.0F;
+                return 1.0F;
         };
     }
 
@@ -127,9 +143,9 @@ public:
             case Wall:
                 return Color::White;
             case Floor:
-                return Color(255,255,255,0.65F);
+                return Color(255,4,255,0.65F);
             default:
-                return Color::Black;
+                return Color::Red;
         };
     }
 

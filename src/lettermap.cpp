@@ -10,6 +10,8 @@
 #include <utility>
 #include <iostream>
 
+#include "./circularpairmap.cpp"
+
 using namespace sf;
 using namespace std;
 
@@ -82,11 +84,11 @@ private:
     string metchars = "?!#@[]·-_/*<>";
 
     string yo = "OY";
-    char floor = ' ';
+    char floor = '.';
 
     // player pos
     int playerI=-1,playerJ=-1;
-
+/*
     struct hash_pair { 
         template <class T1, class T2> 
         size_t operator()(const pair<T1, T2>& p) const{ 
@@ -97,8 +99,8 @@ private:
     }; 
 
     unordered_map<pi,bool,hash_pair> explored;
-
-    //circularpairmap explored;
+*/
+    circularpairmap<bool> explored;
 
 public:
 
@@ -180,16 +182,20 @@ public:
     }
 
     void getExplored(vector<pi> &cells){
-        for(auto x : explored)
+        for(auto x : explored.m)
             cells.push_back(x.first);
+        // for(auto x : explored)
+        //     cells.push_back(x.first);
     }
 
     void addExplored(vector<pi> justViewed){    
 
         for(pi x : justViewed){
             pi tmp =  make_pair(x.first, x.second); 
-            if(explored.find(x)==explored.end())  
-                explored[tmp]=true;
+            if(explored.m.find(x)==explored.m.end())  
+                explored.insert(tmp,true);
+            // if(explored.find(x)==explored.end())  
+            //     explored[tmp]=true;
                 //if(find(explored.begin(),explored.end(),tmp) == explored.end()) { // can remove it if u want!
 
         }
@@ -280,7 +286,7 @@ public:
     char factoryLetter(Cell cell){
         switch(cell){
             case Wall : return ((rand()%2)==0) ? 'Y' : 'O';
-            case Floor : return floor;
+            case Floor : return '.';
             case User : return '@';
         };
         return 'Y';
