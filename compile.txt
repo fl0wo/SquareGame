@@ -1,1 +1,1 @@
-g++ -c Pong.cpp
+g++ -c main.cpp

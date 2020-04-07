@@ -1,1 +1,2 @@
-g++ Pong.o -o test -lsfml-window -lsfml-graphics -lsfml-system -lsfml-audio
+g++ main.o -o test -lsfml-window -lsfml-graphics -lsfml-system -lsfml-audio
+g++ -o main.exe main.o -lsfml-window -lsfml-graphics -lsfml-system -lsfml-audio

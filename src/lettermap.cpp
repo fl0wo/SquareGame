@@ -39,8 +39,12 @@ enum Cell{
     Door = 5,
     Spawn = 6,
     User=7,
+    RoomRoof=8,
     Unknown = -1
 };
+
+// should also add here a list of object that user can pass trough
+// like creative game pass trough walls, or water walker jesus mode
 
 /**
  * Wall border around inclusive.
@@ -69,14 +73,13 @@ struct Room{
     bool is_inside(int i,int j){
         return (i>=r && i<=r+rows) && (j>=c && j<=c + columns);
     }
-
-
-
 };
 
 class LetterMap{
 
 private:  
+
+    //Cell cellOccupied;
 
     string letters = "qwertyuiopasdfghjklzxcvbnm";
     string accents = "òàèùì";
@@ -84,25 +87,16 @@ private:
     string metchars = "?!#@[]·-_/*<>";
 
     string yo = "OY";
-    char floor = '.';
 
     // player pos
     int playerI=-1,playerJ=-1;
-/*
-    struct hash_pair { 
-        template <class T1, class T2> 
-        size_t operator()(const pair<T1, T2>& p) const{ 
-            auto hash1 = hash<T1>{}(p.first); 
-            auto hash2 = hash<T2>{}(p.second); 
-            return hash1 ^ hash2; 
-        } 
-    }; 
 
-    unordered_map<pi,bool,hash_pair> explored;
-*/
     circularpairmap<bool> explored;
 
 public:
+
+    char floor = '-';
+
 
     int row = MAXN;
     int column = MAXN;
@@ -141,7 +135,7 @@ public:
         Room from = createRoom();
         rooms.push_back(from);
 
-        applyRoom(from,Floor);
+        applyRoom(from,Floor);// Here before the material was Floor
 
         while(nRooms--){
             
@@ -149,7 +143,7 @@ public:
             if(!to.exists) break;    // means there's no more space
 
             rooms.push_back(to);
-            applyRoom(to,Floor);
+            applyRoom(to,Floor); // HereFloor before the material was 
             applyPath(connectRooms(from,to),Floor);
 
             from = to;
@@ -286,7 +280,7 @@ public:
     char factoryLetter(Cell cell){
         switch(cell){
             case Wall : return ((rand()%2)==0) ? 'Y' : 'O';
-            case Floor : return '.';
+            case Floor : return floor;
             case User : return '@';
         };
         return 'Y';
@@ -307,9 +301,11 @@ public:
         return plane[i][j] == Wall;
     }
 
+
+    // Attention : now u can go only on Floor and RoomRoof
     bool canGo(int i,int j){
         if(i<0 || j<0 || i>row || j>column) return false;
-        return plane[i][j] == Floor || (playerI == i && playerJ == j);
+        return plane[i][j] == Floor || plane[i][j] == RoomRoof || (playerI == i && playerJ == j);
     }
 
     void __pr(){
@@ -329,10 +325,12 @@ public:
     }
 
     void playerPos(int i,int j){
-        if(playerI!=-1 && playerJ!=-1)
+        if(playerI!=-1 && playerJ!=-1){
             plane[playerI][playerJ]=Floor;
+        }
         playerI = i;
         playerJ = j;
+        //cellOccupied = plane[playerI][playerJ];
         plane[playerI][playerJ]=User;
     }
     
@@ -346,6 +344,10 @@ public:
 
     int getPlayerColumn(){
         return playerJ;
+    }
+
+    bool isPlayerOnRoom(){
+        return plane[playerI][playerJ]=User;
     }
 
     vector<pi> bresenham(int x1, int y1, int x2, int y2,Cell material) {

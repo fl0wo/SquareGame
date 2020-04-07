@@ -25,7 +25,7 @@ private:
     Font font;
     SoundBuffer sound;
     Visibility vieww;
-        //     if (!ballSoundBuffer.loadFromFile("resources/ball.wav")) return EXIT_FAILURE;     Sound ballSound(ballSoundBuffer);
+    //if(!ballSoundBuffer.loadFromFile("resources/ball.wav")) return EXIT_FAILURE;     Sound ballSound(ballSoundBuffer);
 
 public:
 
@@ -55,6 +55,86 @@ public:
         msg.setString(word);
         return msg;
     }
+
+    // duplication of Text create (ABSOLUTELY TO CHANGE IN EXTERNAL CLASS!)
+    RectangleShape createRectangle(int size,float x,float y, Color c){
+        RectangleShape msg;
+        msg.setPosition(x, y);
+        msg.setFillColor(c);
+        msg.setSize({size,size});
+        return msg;
+    }
+
+    // duplication of genLetters (to fix)
+    vector<RectangleShape> genRects(LetterMap &m,float zoom,bool floorIncluded,int vision_ray){
+        vector<RectangleShape> squares;
+
+        int ray = vision_ray;// m.getPlayerRay(); for now...
+        int playerRow = m.getPlayerRow();
+        int playerCol = m.getPlayerColumn();
+
+        vector<pi> visibles;
+        vector<pi> explored;
+        
+        m.getExplored(explored);
+        vieww.show(m,ray,playerRow,playerCol,visibles);
+
+        map<pi,KindVisibility> filter;
+
+        for(pi cell : explored) filter[cell] = ExploredOnce;    // First old view
+        for(pi cell : visibles) filter[cell] = JustVisited;      // Than override with just visti
+
+        for(pair<pi,KindVisibility> block : filter){
+            pi cell = block.first;
+            KindVisibility kv = block.second; // defines the trasparency
+
+            int j = cell.first;
+            int i = cell.second;
+
+            RectangleShape letter = factoryRectangle(m,i,j,kv,zoom);
+
+            squares.push_back(letter);
+        }
+
+        for(pi cell : visibles){
+            int j = cell.first;
+            int i = cell.second;
+
+            if(!m.isWall(j,i) && floorIncluded){
+
+                string x = to_string(m.floor);
+                Color c = Color::Red;
+                RectangleShape letter = createRectangle(S,i*S,j*S,c);
+
+                squares.push_back(letter);
+            }
+
+        }
+        //Exception for the player
+        RectangleShape player = createRectangle(S,playerCol*S,playerRow*S,Color::Blue);
+        squares.push_back(player);
+        
+        // what i just saw, now is explored.
+        m.addExplored(visibles);
+        filter.clear();
+
+        return squares;
+    }
+
+    // duplication of factoryLetter (2 fix plz!)
+    RectangleShape factoryRectangle(LetterMap &m,int i,int j,KindVisibility kv,float zoom){
+        float a = factoryTrasparency(kv);
+        Cell type = m.getType(j,i);
+        string x = string(1,m.get(j,i));
+        Color c = factoryColor(type);
+
+        c.a *= a;
+
+        RectangleShape letter = createRectangle(S*zoom,i*S*zoom,j*S*zoom,c);
+
+        return letter;
+    }
+
 
     vector<Text> genLetters(LetterMap &m){
         vector<Text> letters;
@@ -92,7 +172,7 @@ public:
 
             if(!m.isWall(j,i)){
 
-                string x = ".";
+                string x = to_string(m.floor);
                 Color c = Color::Red;
                 Text letter = create(S,i*S,j*S,c,x);
 

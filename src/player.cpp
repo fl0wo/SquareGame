@@ -8,6 +8,12 @@ private:
     float speed = 0.38F;
     bool playing = false;
     std::pair<float,float> spawn = {0.0f,0.0f};
+    bool isInsideRoom = false;
+    bool lightOn=true;
+    int vision_ray = 10;
+
+    const int MIN_VISION_RAY = 0;
+    const int MAX_VISION_RAY = 20;
 
 public:
 
@@ -19,6 +25,9 @@ public:
     bool isPlaying(){return playing;}
     bool start(){playing = true;}
     bool lose(){playing = false;}
+
+    bool insideRoom(){return isInsideRoom;}
+    void setOnRoom(bool insideRoom){isInsideRoom=insideRoom;}
 
     void setSpeed(float speed){
         this->speed = speed;
@@ -61,6 +70,16 @@ public:
         dirY += offSetY;
     }
 
+    void incRay(int incDelta){
+        vision_ray+=incDelta;
+        vision_ray=min(MAX_VISION_RAY,vision_ray);
+        vision_ray=max(vision_ray,MIN_VISION_RAY);
+    }
+    
+    int getVisionRay(){
+        return vision_ray;
+    }
+
     void setSpawn(float x,float y){
         spawn = {x,y};
     }
@@ -76,5 +95,8 @@ public:
 
     void setDirY(float setY){dirY = setY;}
     void setDirX(float setX){dirX = setX;}
+
+    void switchLight(){lightOn=!lightOn;}
+    bool isLightOn(){return lightOn;}
 
 };
