@@ -1,3 +1,5 @@
+#include<iostream>
+using namespace std;
 class Player{
 
 private:
@@ -7,7 +9,7 @@ private:
 
     float speed = 0.38F;
     bool playing = false;
-    std::pair<float,float> spawn = {0.0f,0.0f};
+    pair<float,float> spawn = {0.0f,0.0f};
     bool isInsideRoom = false;
     bool lightOn=true;
     int vision_ray = 10;

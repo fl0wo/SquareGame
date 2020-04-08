@@ -10,6 +10,12 @@
 #include <utility>
 #include <iostream>
 
+
+// For avoiding multiple declarations : 
+
+#ifndef LETTER_MAP
+#define LETTER_MAP
+
 #include "./circularpairmap.cpp"
 
 using namespace sf;
@@ -123,6 +129,18 @@ public:
     LetterMap() {
         //does nothing
     } 
+
+    int operator() ( int x, int y ) { return plane[x][y]; }
+
+    // To optimize with cache
+    vector<vector<int>> getPlane(){
+        vector<vector<int>> plane_vectorized(MAXN+BORDER,vector<int>(MAXN+BORDER));
+        for(int i=0;i<MAXN+BORDER;i++)
+            for(int j=0;j<MAXN+BORDER;j++)
+                plane_vectorized[i][j] = plane[i][j]==Floor?0:1;
+
+        return plane_vectorized;
+    }
 
     /**
      * Greedy algorithm for rooms creations. Time O(2n) 
@@ -377,3 +395,5 @@ public:
     }
 
 };
+// end declaration
+#endif

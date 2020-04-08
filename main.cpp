@@ -11,6 +11,8 @@
 #include "./src/player.cpp"
 #include "./src/camera2d.cpp"
 
+#include "./src/entityes/bacterium.cpp"
+
 using namespace std;
 using namespace sf;
 
@@ -21,6 +23,7 @@ Input in;
 Event event;
 LetterMap m(tx.W,tx.H,tx.S);
 Camera2D c(tx.W,tx.H);
+Entity *enemy = new Bacterium(m,1,1);
 
 void update(RenderWindow &window);
 
@@ -33,6 +36,10 @@ int main(){
    // window.setFramerateLimit(120);
 
     pair<int,int> matrixPos = m.getValidSpawn();
+    pair<int,int> enemyPos = m.getValidSpawn();
+
+    enemy->setRow(enemyPos.second);
+    enemy->setCol(enemyPos.first);
 
     pl.setSpawn(matrixPos.second, matrixPos.first);
     pl.respawn();
@@ -43,18 +50,19 @@ int main(){
     FloatRect rect_container = FloatRect(0,0, tx.W,tx.H);
     View container(rect_container);
 */
-    cout << "pl spawn : ("<<pl.getX() << "," << pl.getY() << ")\n";
-
     c.center(pl.getX(),pl.getY(),tx.S);
 
     float oldZoom = 1.0F;    
 
     const Time delay   = milliseconds(1000.0F/tx.FPS);
     const Time step_delay   = milliseconds(40.0F);
-    Clock clock;
+    Clock clock,enemyClock;
     clock.restart();
+    enemyClock.restart();
 
     if(!tx.setDefaultFont()) return EXIT_FAILURE;
+
+    enemy->targetPos(pl.getX(),pl.getY());
 
     while (window.isOpen()){
 
@@ -98,7 +106,7 @@ int main(){
 
             int futureX = pl.getX() + pl.getDirX();
             int futureY = pl.getY() + pl.getDirY();
-       //    float deltaTime = fps.restart().asSeconds();
+       //   float deltaTime = fps.restart().asSeconds();
 
             if(m.canGo(futureY,pl.getX())) {
                 clock.restart();
@@ -113,11 +121,16 @@ int main(){
             }
 
             //pl.setOnRoom(m.isPlayerOnRoom());
+            if(enemyClock.getElapsedTime().asMilliseconds() > milliseconds(200.0F).asMilliseconds()){
+                enemyClock.restart();
+                if(!enemy->nextStep()) 
+                    enemy->targetPos(pl.getX(),pl.getY());
+                cout << " enemy pos ("<<enemy->getRow() << ";" << enemy->getCol() << ");\n";
+            }
 
             c.target(pl.getX(),pl.getY(),tx.S); // zoom is included in camera class
             c.slerpFollow();
             //c.zoomActived(pl.insideRoom(),deltaTime); // if is inside a room, zoom
-            
             //cout << "current zoom : " << c.getZoom() << "\n";
         }
         /*
@@ -145,12 +158,8 @@ void drawDisplay(RenderWindow &window);
 void drawCrossHair(RenderWindow &window);
 
 void update(RenderWindow &window){
-    if (pl.isPlaying()){
-       drawDisplay(window);
-    }
-    else{
-        drawHome(window);
-    }
+    if (pl.isPlaying()) drawDisplay(window);
+    else drawHome(window);
 }
 
 void drawHome(RenderWindow &window){
@@ -159,10 +168,8 @@ void drawHome(RenderWindow &window){
 
 void drawDebug(RenderWindow &window){
 
-
     drawCrossHair(window);
 
-    
     vector<Text> letters = tx.genLetters(m);
     for(Text letter : letters){
         letter.move(-c.getX(),-c.getY()); // moves in opposite direction
@@ -178,6 +185,9 @@ void drawDisplay(RenderWindow &window){
         rect.move(-c.getX(),-c.getY()); // moves in opposite direction
         window.draw(rect);
     }
+    //window.draw(CircleShape(200));
+    enemy->draw(window,tx.S,c);
+
     drawCrossHair(window);
 }
 
