@@ -9,7 +9,10 @@
 #include <set>
 #include <utility>
 #include <iostream>
-
+#include <functional>
+#include <queue>
+#include <vector>
+#include <iostream>
 
 // For avoiding multiple declarations : 
 
@@ -104,8 +107,8 @@ public:
     char floor = '-';
 
 
-    int row = MAXN;
-    int column = MAXN;
+    int _rows = MAXN;
+    int _columns = MAXN;
     //set<pi> explored = set<pi>();
 
     Cell plane[MAXN+BORDER][MAXN+BORDER];
@@ -131,6 +134,9 @@ public:
     } 
 
     int operator() ( int x, int y ) { return plane[x][y]; }
+
+    int getNRows(){return this->_rows;}
+    int getNCols(){return this->_columns;}
 
     // To optimize with cache
     vector<vector<int>> getPlane(){
@@ -304,26 +310,32 @@ public:
         return 'Y';
     }
 
+
     char get(int i,int j){
-        if(i<0 || j<0 || i>row || j>column) return 'E';
+        if(!isLegit(i,j)) return 'E';
         else return factoryLetter(plane[i][j]);
     }
 
     Cell getType(int i,int j){
-        if(i<0 || j<0 || i>row || j>column) return Unknown;
+        if(!isLegit(i,j)) return Unknown;
         return (Cell) plane[i][j];
     }
 
     bool isWall(int i,int j){
-        if(i<0 || j<0 || i>row || j>column) return false;
+        if(!isLegit(i,j)) return false;
         return plane[i][j] == Wall;
     }
 
 
     // Attention : now u can go only on Floor and RoomRoof
     bool canGo(int i,int j){
-        if(i<0 || j<0 || i>row || j>column) return false;
+        if(i<0 || j<0 || i>getNRows() || j>getNCols()) return false;
         return plane[i][j] == Floor || plane[i][j] == RoomRoof || (playerI == i && playerJ == j);
+    }
+
+    // Attention : now u can go only on Floor and RoomRoof
+    bool isLegit(int i,int j){
+        return !(i<0 || j<0 || i>getNRows() || j>getNCols());
     }
 
     void __pr(){
@@ -368,30 +380,99 @@ public:
         return plane[playerI][playerJ]=User;
     }
 
-    vector<pi> bresenham(int x1, int y1, int x2, int y2,Cell material) {
-        vector<pi> cellsBetween;
+    bool path_between_ric(int r1,int c1,int r2,int c2,vector<pair<int,int>> &ans,bool v[MAXN][MAXN]){
+        if(!isLegit(r1,c1))return false;
+        if(r1==r2 && c1==c2)return true;
+        if(v[r1][c1]) return false;
 
-        int m_new = 2 * (y2 - y1); 
-        int slope_error_new = m_new - (x2 - x1); 
+        v[r1][c1]=true;
+        int dirs[4][2] = {{0,1},{1,0},{-1,0},{0,-1}};
 
-        for (int x = x1, y = y1; x <= x2; x++) {
-            
-            if(plane[x][y] == material)
-                cellsBetween.push_back(p(x,y));
+        for(auto d:dirs){
+            if(isLegit(r1+d[0],c1+d[1]) && path_between_r(r1+d[0],c1+d[1],r2,c2,ans)){
+                ans.emplace_back(make_pair(r1+d[0],c1+d[1]));
+                return true;
+            }
+        }
 
-            cout << "(" << x << "," << y << ")\n"; 
+        return false;
+    }
 
-            // Add slope to increment angle formed 
-            slope_error_new += m_new; 
+    bool path_between_r(int r1,int c1,int r2,int c2,vector<pair<int,int>> &ans){
+        bool visited[MAXN][MAXN];
+        memset(visited,false,sizeof(visited));
+        return path_between_ric(r1,c1,r2,c2,ans,visited);
+    }
 
-            // Slope error reached limit, time to 
-            // increment y and update slope error. 
-            if (slope_error_new >= 0) {
-                y++; 
-                slope_error_new  -= 2 * (x2 - x1); 
-            } 
-        } 
-        return cellsBetween;
+
+    /**
+     * r1 = riga enemy
+     * c1 = colonna enemy
+     * r2 = riga target
+     * c2 = colonna target
+     * ans = shortest path in grid
+     * Time : O(n*m) (where n is abs(r1-r2) and m is abs(c1-c2))
+     * bfs (cause on short distance has smaller ms time than A*)
+     * (even tho the complexity is higher)
+     */
+    bool path_between(int r1,int c1,int r2,int c2,vector<pi> &ans){
+
+        cout << "CERCHIAMO wdwdwd PATH : (" << r1 << "," << c1 << ") - (" << r2 << "," << c2<<")\n";
+
+        if(r1==r2 && c1==c2)return true;
+
+        int h = getNRows();
+        if (h == 0) return false;
+        int l = getNCols();
+
+        bool v[h][l]; // visited false all
+        //pi paths[abs(r1-r2)+1][abs(c1-c2)+1]; // shortest paths
+        pi paths[h][l];
+
+        priority_queue<pi> q;   // queue
+
+        q.push({r1,c1}); // where im situated at the beginning
+        paths[r1][c1] = {r1,c1}; // to get where i am, i dont have to move
+
+        bool found = false;
+
+        while(!q.empty() && !found){   // till is not empty
+            pi x = q.top();q.pop(); // get the first inserted
+            int r = x.first;
+            int c = x.second;
+          //  cout << " sono  a (" << r <<"," << c <<")\n";
+
+            if (!isLegit(r,c) || v[r][c] || isWall(r,c))continue;
+            v[r][c] = true;
+            pi curPos = {r,c};
+
+            if(r==r2 && c==c2){found=true;break;}
+
+            if(isLegit(r,c-1)){q.push({r,c-1});if(!v[r][c-1]) paths[r][c-1]=curPos;} //go left
+            if(isLegit(r,c+1)){q.push({r,c+1});if(!v[r][c+1]) paths[r][c+1]=curPos;} //go right
+            if(isLegit(r-1,c)){q.push({r-1,c});if(!v[r-1][c]) paths[r-1][c]=curPos;} //go up
+            if(isLegit(r+1,c)){q.push({r+1,c});if(!v[r+1][c]) paths[r+1][c]=curPos;} //go down
+        }
+
+        if(!found)return false;
+
+        pi step = paths[r2][c2];
+
+        cout << "di fatto trovata\n";
+        int tmp=20;
+        while(tmp--){
+            cout << "siamo a : " << step.first << "," << step.second << "\n";
+            ans.emplace_back(step);
+            step = paths[step.first][step.second];
+        }
+/*
+        while(step.first!=r1 && step.second!=c1){
+            cout << "siamo a : " << step.first << "," << step.second << "\n";
+            ans.emplace_back(step);
+            step = paths[step.first][step.second];
+        }
+*/
+        return true;
     }
 
 };

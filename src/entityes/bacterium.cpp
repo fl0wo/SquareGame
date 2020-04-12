@@ -12,15 +12,24 @@ class Bacterium: public Entity {
         virtual void draw(RenderWindow &window,int pixePerUnit,Camera2D &cam){
             CircleShape circle = CircleShape(1.0F/2.0F*pixePerUnit);
             circle.setFillColor(Color::Yellow);
-            circle.setPosition( (this->row*pixePerUnit) - cam.getX(),(this->col*pixePerUnit) -cam.getY() );
+            circle.setPosition((this->getRow()*pixePerUnit)-cam.getX(),(this->getCol()*pixePerUnit)-cam.getY());
+            //circle.move(-circle.getRadius() ,-circle.getRadius());
+
             //circle.setPosition(this->row,this->col);
+            CircleShape ray2 = circle;
+            ray2.setFillColor(Color::Transparent);
+            ray2.setRadius(pixePerUnit * this->getVisibilityRay());
+            ray2.setOutlineColor(Color::Black);
+            ray2.setOutlineThickness(2.5);
+            ray2.move(-ray2.getRadius() ,-ray2.getRadius());
 
             vector<pair<int,int>> folPath = this->getFollowingPath();
             window.draw(circle);
+            window.draw(ray2);
 
             for(pair<int,int> p:folPath){
                 RectangleShape sq;
-                sq.setPosition( (p.first*pixePerUnit)- cam.getX(), (p.second*pixePerUnit)  -cam.getY() );
+                sq.setPosition( (p.second*pixePerUnit)- cam.getX(), (p.first*pixePerUnit)  -cam.getY() );
                 sq.setFillColor(Color::Blue);
                 sq.setSize({0.6F*pixePerUnit,0.6F*pixePerUnit});    
 

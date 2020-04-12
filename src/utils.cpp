@@ -79,13 +79,13 @@ public:
         m.getExplored(explored);
 
         // calculate shadows
-        //vieww.show(m,ray,playerRow,playerCol,visibles);
+        vieww.show(m,ray,playerRow,playerCol,visibles);
 
-        //for test purpose only
-        visibles.resize((MAXN + BORDER)*(MAXN + BORDER));
-        for(int i=0;i<MAXN+BORDER;i++)
-            for(int j=0;j<MAXN+BORDER;j++)
-                visibles.push_back({i,j});
+        // //for test purpose only
+        // visibles.resize((MAXN + BORDER)*(MAXN + BORDER));
+        // for(int i=0;i<MAXN+BORDER;i++)
+        //     for(int j=0;j<MAXN+BORDER;j++)
+        //         visibles.push_back({i,j});
 
 
         map<pi,KindVisibility> filter;

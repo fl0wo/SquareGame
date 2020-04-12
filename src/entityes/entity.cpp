@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cmath>
+#include <math.h>
+
 #include "./../lettermap.cpp";
 #include "./path_find/astar.cpp";
 
@@ -15,13 +18,13 @@ private:
     int visibility_ray;
 
     int localPosInPath=0;
-    list<point> path; // percorso che deve seguire corrente
+    vector<pi> path; // percorso che deve seguire corrente
     AStar as;
     mappa m;
 
 public:
 
-    int row,col;
+    int row_pos,col_pos;
     int targetRow,targetCol;
 
     Entity(LetterMap &map,int visibility_ray,int delay_move){
@@ -37,11 +40,11 @@ public:
 
     virtual void draw(RenderWindow &window,int pixePerUnit,Camera2D &cam)=0;
 
-    void setRow(int r) {this->row = r;}
-    void setCol(int c) {this->col = c;}
+    void setRow(int r) {this->row_pos = r;}
+    void setCol(int c) {this->col_pos = c;}
 
-    int getRow(){return row;}
-    int getCol(){return col;}
+    int getRow(){return row_pos;}
+    int getCol(){return col_pos;}
     int getVisibilityRay(){return visibility_ray;}
     int getMillisecDelayMove(){return delay_move;}
 
@@ -49,29 +52,40 @@ public:
         if(path.size()<=0)return false;
         localPosInPath++;
         std::cout << "passo numero : " << localPosInPath << " \n";
-        point next = path.front();
-        path.pop_front();
-        setRow(next.x);
-        setCol(next.y);
+        pi next = path[0];
+        path.erase(path.begin());
+        setRow(next.first);
+        setCol(next.second);
         return true;
     }
 
+    double calcDist(int row, int col, int x, int y) {
+        return ((double) sqrt((row - x) * (row - x) + (col - y) * (col - y)));
+    }
+
+    bool searchTargetAround(int x,int y){
+        float distPlayer = calcDist(x,y,getCol(),getRow());
+        cout << "distance : " << distPlayer << "\n";
+        if(distPlayer<=visibility_ray){
+            cout << "oddio sei entrato assurdo";
+            targetPos(x,y);
+            return true;
+        }
+        return false;
+    }
+
     void targetPos(int targetRow,int targetCol){
-        if(targetRow==this->row && targetCol==this->col)return;
+        if(targetRow==this->getCol() && targetCol==this->getRow())return; // seems bugged, but it isnt :/
         path.clear();
         setTargetRow(targetRow);
         setTargetCol(targetCol);
-        vector<pair<int,int>> ans;
-
-        //aStarSearch(grid, src, dest,ans);
-
-        point s(this->row,this->col), e(targetRow,targetCol);
-
-        if(as.search(s,e,m)){
-            int c = as.path(path);
-            cout << "cost path : "  << c << "\n";}
-        else
-            cout << "smth wrong \n";
+        cout << "troviamo shortest path!!\n";
+        if(map.path_between_r(this->getCol(),this->getRow(),targetRow,targetCol,this->path)){
+            int c = path.size();
+            cout << " cost path : " << c << "\n";
+        }else{
+            cout << "problema!\n";
+        }
     }
 
     void changeRandomTargetPos(){
@@ -89,9 +103,21 @@ public:
 
     vector<pair<int,int>> getFollowingPath(){
         vector<pair<int,int>> rispath;
-        for(point p:path)
-            rispath.push_back({p.x,p.y});
+        for(pair<int,int> p:path)
+            rispath.push_back({p.first,p.second});
         return rispath;
     }
     
 };
+
+
+        //aStarSearch(grid, src, dest,ans);
+/*
+        point s(this->row,this->col), e(targetRow,targetCol);
+
+        if(as.search(s,e,m)){
+            int c = as.path(path);
+            cout << "cost path : "  << c << "\n";}
+        else
+            cout << "smth wrong \n";
+            */
