@@ -19,23 +19,19 @@ private:
 
     int localPosInPath=0;
     vector<pi> path; // percorso che deve seguire corrente
-    AStar as;
-    mappa m;
 
 public:
 
     int row_pos,col_pos;
+    float real_row,real_col; // slerp smooth row and col (pixels)
     int targetRow,targetCol;
+    float smoothness = 0.25;
 
     Entity(LetterMap &map,int visibility_ray,int delay_move){
         this->map=map;
         this->visibility_ray=visibility_ray;
         this->delay_move=delay_move;
-        changeRandomTargetPos();
-
-        vector<vector<int>> grid = map.getPlane();
-        
-        m = mappa(grid);
+        //changeRandomTargetPos();
     }
 
     virtual void draw(RenderWindow &window,int pixePerUnit,Camera2D &cam)=0;
@@ -49,10 +45,10 @@ public:
     int getMillisecDelayMove(){return delay_move;}
 
     bool nextStep(){
-        if(path.size()<=0)return false;
+        if(path.size()<=1)return false;
         localPosInPath++;
-        std::cout << "passo numero : " << localPosInPath << " \n";
-        pi next = path[0];
+        //std::cout << "passo numero : " << localPosInPath << " \n";
+        pi next = path[1];
         path.erase(path.begin());
         setRow(next.first);
         setCol(next.second);
@@ -75,16 +71,17 @@ public:
     }
 
     void targetPos(int targetRow,int targetCol){
-        if(targetRow==this->getCol() && targetCol==this->getRow())return; // seems bugged, but it isnt :/
+        //if(targetRow==this->getCol() && targetCol==this->getRow())return; // seems bugged, but it isnt :/
+        nextStep();
         path.clear();
         setTargetRow(targetRow);
         setTargetCol(targetCol);
-        cout << "troviamo shortest path!!\n";
-        if(map.path_between_r(this->getCol(),this->getRow(),targetRow,targetCol,this->path)){
+        //cout << "troviamo shortest path!!\n";
+        if(map.path_find(this->getCol(),this->getRow(),targetCol,targetRow,this->path)){
             int c = path.size();
-            cout << " cost path : " << c << "\n";
+          //  cout << " cost path : " << c << "\n";
         }else{
-            cout << "problema!\n";
+           // cout << "problema!\n";
         }
     }
 
@@ -106,6 +103,22 @@ public:
         for(pair<int,int> p:path)
             rispath.push_back({p.first,p.second});
         return rispath;
+    }
+
+
+    float getRealRow(){return real_row;}
+    float getRealCol(){return real_col;}
+
+    void setRealRow(float newX){real_row=newX;}
+    void setRealCol(float newY){real_col=newY;}
+
+    void move(float offsetX,float offsetY){
+        setRealRow(real_row+offsetX);
+        setRealCol(real_col+offsetY);
+    }
+
+    void slerpFollowPosition(){
+        move((row_pos-real_row)*smoothness,(col_pos-real_col)*smoothness);
     }
     
 };

@@ -23,7 +23,7 @@ Input in;
 Event event;
 LetterMap m(tx.W,tx.H,tx.S);
 Camera2D c(tx.W,tx.H);
-//Entity *enemy = new Bacterium(m,10,1);
+Entity *enemy = new Bacterium(m,20,1);
 
 void update(RenderWindow &window);
 
@@ -38,8 +38,8 @@ int main(){
     pair<int,int> matrixPos = m.getValidSpawn();
     pair<int,int> enemyPos = m.getValidSpawn();
 
-    // enemy->setRow(enemyPos.second);
-    // enemy->setCol(enemyPos.first);
+    enemy->setRow(enemyPos.first);
+    enemy->setCol(enemyPos.second);
 
     pl.setSpawn(matrixPos.second, matrixPos.first);
     pl.respawn();
@@ -62,7 +62,7 @@ int main(){
 
     if(!tx.setDefaultFont()) return EXIT_FAILURE;
 
-    //enemy->targetPos(pl.getX(),pl.getY());
+    enemy->targetPos(pl.getX(),pl.getY());
 
     while (window.isOpen()){
 
@@ -113,23 +113,26 @@ int main(){
                 pl.setPos(pl.getX(),futureY);
                 m.playerPos(futureY,pl.getX());
             }
-
             if(m.canGo(pl.getY(),futureX)) {
                 clock.restart();
                 pl.setPos(futureX,pl.getY());
                 m.playerPos(pl.getY(),futureX);
             }
+        
+            //pl.setOnRoom(m.isPlayerOnRoom());
+            if(enemyClock.getElapsedTime().asMilliseconds() > milliseconds(70.0F).asMilliseconds()){
+                enemyClock.restart();
+               // enemy->searchTargetAround(pl.getY(),pl.getX());
+                enemy->searchTargetAround(pl.getX(),pl.getY());
+                //enemy->targetPos(pl.getX(),pl.getY());
 
-            // //pl.setOnRoom(m.isPlayerOnRoom());
-            // if(enemyClock.getElapsedTime().asMilliseconds() > milliseconds(200.0F).asMilliseconds()){
-            //     enemyClock.restart();
-            //    // enemy->searchTargetAround(pl.getY(),pl.getX());
-            //     //if(!enemy->nextStep()) 
-            //         //enemy->targetPos(pl.getX(),pl.getY());
-            //     cout << " enemy pos ("<<enemy->getCol() << ";" << enemy->getRow() << ");\n";
-            //     cout << " player pos ("<<pl.getY() << ";" << pl.getX() << ");\n";
-
-            // }
+                // if(!enemy->nextStep()){
+                //     //nothing
+                // }
+           //     cout << " enemy pos ("<<enemy->getCol() << ";" << enemy->getRow() << ");\n";
+             //   cout << " player pos ("<<pl.getY() << ";" << pl.getX() << ");\n";
+            }
+            enemy->slerpFollowPosition();
 
             c.target(pl.getX(),pl.getY(),tx.S); // zoom is included in camera class
             c.slerpFollow();
@@ -189,7 +192,7 @@ void drawDisplay(RenderWindow &window){
         window.draw(rect);
     }
     //window.draw(CircleShape(200));
-    //enemy->draw(window,tx.S,c);
+    enemy->draw(window,tx.S,c);
 
     drawCrossHair(window);
 }
