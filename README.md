@@ -1,6 +1,7 @@
 # roguelike-c-
 Hand made c++ roguelike game.
 
+![lol](https://github.com/fl0wo/SquareGame-Cpp/blob/master/ezgif.com-gif-maker.gif)
 
 todo : 
 
@@ -33,7 +34,3 @@ Add potions
 
 buy OVH linux server
 make server in c++/java as u want.
-
-
-
-![lol](https://github.com/fl0wo/SquareGame-Cpp/blob/master/ezgif.com-gif-maker.gif)
