@@ -1,22 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include <cmath>
+
 #include <ctime>
 #include <cstdlib>
-#include <chrono>
 #include <thread>
 
-#include "./src/input.cpp"
-#include "./src/utils.cpp"
-#include "./src/player.cpp"
-#include "./src/camera2d.cpp"
-
-#include "./src/entityes/bacterium.cpp"
+#include "Utils.h"
+#include "Player.h"
+#include "Input.h"
+#include "Camera2D.h"
+#include "Bacterium.h"
 
 using namespace std;
 using namespace sf;
 
-// costanti
+
 Utils tx;
 Player pl;
 Input in;
@@ -46,10 +44,7 @@ int main(){
 
     m.playerPos(matrixPos.first,matrixPos.second);
     pl.setOnRoom(m.isPlayerOnRoom());
-/*
-    FloatRect rect_container = FloatRect(0,0, tx.W,tx.H);
-    View container(rect_container);
-*/
+
     c.center(pl.getX(),pl.getY(),tx.S);
 
     float oldZoom = 1.0F;    
@@ -59,15 +54,10 @@ int main(){
     Clock clock,enemyClock;
     clock.restart();
     enemyClock.restart();
-
-    if(!tx.setDefaultFont()) return EXIT_FAILURE;
-
+    // if(!tx.setDefaultFont()) return EXIT_FAILURE;
     enemy->targetPos(pl.getX(),pl.getY());
 
     while (window.isOpen()){
-
-        // add some sleep
-        this_thread::sleep_for(chrono::milliseconds(delay.asMilliseconds()));
 
         while(window.pollEvent(event)){
             
@@ -139,6 +129,7 @@ int main(){
             //c.zoomActived(pl.insideRoom(),deltaTime); // if is inside a room, zoom
             //cout << "current zoom : " << c.getZoom() << "\n";
         }
+
         /*
         if(pl.insideRoom() && oldZoom!=1.0F){
             container.reset(rect_container);
