@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # RogueLike
 Hand made c++ roguelike game.
 
